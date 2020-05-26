@@ -43,4 +43,7 @@ setup(
     # could also include long_description, download_url, etc.
     long_description=long_description,
     long_description_content_type='text/markdown',  # Optional (see note above)
+    extras_require={  # Optional
+        'test': ['pytest', 'pytest-flake8'],
+    },
 )
