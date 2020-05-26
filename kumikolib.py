@@ -3,6 +3,11 @@ import os
 import sys
 import cv2 as cv
 
+W_MIN_P = 1/15
+W_MIN = 0
+H_MIN_P = 1/15
+H_MIN = 0
+
 
 def cmp_to_key(mycmp):
     'Convert a cmp= function into a key= function'
@@ -67,9 +72,23 @@ class Kumiko:
                 for filename in filenames:
                         infos.append(self.parse_image(filename))
                 return infos
-        
-        
-        def parse_image(self,filename):
+
+        def parse_image(
+                self,
+                filename: str,
+                w_min_p: float = W_MIN_P,
+                h_min_p: float = H_MIN_P,
+                w_min: int = W_MIN,
+                h_min: int = H_MIN
+        ):
+                """Parse single image.
+
+                Args:
+                    w_min_p: minimum width in percentage
+                    h_min_p: minimum height in percentage
+                    w_min: minimum width in pixel
+                    h_min: minimum height in pixel
+                """
                 img = self.read_image(filename)
                 # TODO: handle error
                 
@@ -100,11 +119,17 @@ class Kumiko:
                         approx = cv.approxPolyDP(contour,epsilon,True)
                         
                         x,y,w,h = cv.boundingRect(approx)
-                        
+
                         # exclude very small panels
-                        if w < infos['size'][0]/15 or h < infos['size'][1]/15:
+                        if w < infos['size'][0] * w_min_p:
                                 continue
-                        
+                        if h < infos['size'][1] * h_min_p:
+                                continue
+                        if w < w_min:
+                                continue
+                        if h < h_min:
+                                continue
+
                         contourSize = int(sum(infos['size']) / 2 * 0.004)
                         cv.drawContours(img, [approx], 0, (0,0,255), contourSize)
                         
