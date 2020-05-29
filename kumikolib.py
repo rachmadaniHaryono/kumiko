@@ -51,6 +51,10 @@ class Kumiko:
             self.options['reldir'] = options['reldir']
         else:
             self.options['reldir'] = os.getcwd()
+        if 'right_to_left' in options:
+            self.options['right_to_left'] = options['right_to_left']
+        else:
+            self.options['right_to_left'] = True
 
     def read_image(self, filename):
         return cv.imread(filename)
@@ -199,12 +203,18 @@ class Kumiko:
         if \
                 p2x >= p1r - self.gutterThreshold and \
                 p2x >= p1x - self.gutterThreshold:
-            return -1
+            if self.options['right_to_left']:
+                return -1
+            else:
+                return 1
 
         # p1 is right from p2
         if \
                 p1x >= p2r - self.gutterThreshold and \
                 p1x >= p2x - self.gutterThreshold:
-            return 1
+            if self.options['right_to_left']:
+                return 1
+            else:
+                return -1
 
         return 0  # should we really fall into this case?
