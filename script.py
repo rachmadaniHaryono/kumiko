@@ -7,6 +7,8 @@ click hydrus-api tqdm
 import configparser
 import io
 import time
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 import click
 import cv2
@@ -65,18 +67,22 @@ def process_hydrus(paths, config_file):
         k = Kumiko()
     cl = hydrus.Client(config['main']['access_key'])
     for path in tqdm(paths):
-        tqdm.write('path: {}'.format(path))
-        k_res = k.parse_image(path, **kwargs)
-        img = cv2.imread(path)
-        panels = k_res['panels']
-        for panel in tqdm(panels):
-            p = panel
-            crop_img = img[p[1]:p[1]+p[3], p[0]:p[0]+p[2]]
-            is_success, im_buf_arr = cv2.imencode(".jpg", crop_img)
-            byte_im = im_buf_arr.tobytes()
-            res = cl.add_file(io.BytesIO(byte_im))
-            tqdm.write(str(res))
-            time.sleep(0.5)
+        hash_ = Path(path).stem
+        with NamedTemporaryFile() as f:
+            tqdm.write('hash: {}'.format(hash_))
+            resp = cl.get_file(hash_=hash_)
+            f.write(resp.content)
+            k_res = k.parse_image(f.name, **kwargs)
+            img = cv2.imread(path)
+            panels = k_res['panels']
+            for panel in tqdm(panels):
+                p = panel
+                crop_img = img[p[1]:p[1]+p[3], p[0]:p[0]+p[2]]
+                _, im_buf_arr = cv2.imencode(".jpg", crop_img)
+                byte_im = im_buf_arr.tobytes()
+                res = cl.add_file(io.BytesIO(byte_im))
+                tqdm.write(str(res))
+                time.sleep(0.5)
 
 
 if __name__ == '__main__':
