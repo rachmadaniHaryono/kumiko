@@ -66,12 +66,17 @@ def process_hydrus(paths, config_file):
     else:
         k = Kumiko()
     cl = hydrus.Client(config['main']['access_key'])
+    repo = 'my tags'
     for path in tqdm(paths):
         hash_ = Path(path).stem
         with NamedTemporaryFile() as f:
             tqdm.write('hash: {}'.format(hash_))
             resp = cl.get_file(hash_=hash_)
             f.write(resp.content)
+            try:
+                tags = cl.file_metadata([hash_])[0]['service_names_to_statuses_to_tags'][repo]['0']
+            except Exception:
+                tags = []
             k_res = k.parse_image(f.name, **kwargs)
             img = cv2.imread(path)
             panels = k_res['panels']
@@ -80,9 +85,9 @@ def process_hydrus(paths, config_file):
                 crop_img = img[p[1]:p[1]+p[3], p[0]:p[0]+p[2]]
                 _, im_buf_arr = cv2.imencode(".jpg", crop_img)
                 byte_im = im_buf_arr.tobytes()
-                res = cl.add_file(io.BytesIO(byte_im))
-                tqdm.write(str(res))
-                time.sleep(0.5)
+                upload_resp = cl.add_file(io.BytesIO(byte_im))
+                cl.add_tags([upload_resp['hash']], service_to_action_to_tags={repo: {0: tags}})
+                tqdm.write(str(upload_resp))
 
 
 if __name__ == '__main__':
