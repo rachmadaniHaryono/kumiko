@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 import typing
 
 import cv2 as cv
@@ -49,9 +48,11 @@ class Kumiko:
     def __init__(self, options: typing.Optional[OptionVar] = None):
         if options is None:
             options = {}
-        self.options["debug"] = options.get("debug", False)
-        self.options["reldir"] = options.get("reldir", os.getcwd())
-        self.options["right_to_left"] = options.get("right_to_left", True)
+        self.options = {
+            "debug": options.get("debug", False),
+            "reldir": options.get("reldir", os.getcwd()),
+            "right_to_left": options.get("right_to_left", True),
+        }
 
     def read_image(self, filename):
         return cv.imread(filename)
@@ -65,7 +66,9 @@ class Kumiko:
         # filenames = filenames[0:10]
         return self.parse_images(filenames)
 
-    def parse_images(self, filenames=[]):
+    def parse_images(self, filenames: typing.Optional[typing.List[str]] = None):
+        if filenames is None:
+            filenames = []
         infos = []
         for filename in filenames:
             infos.append(self.parse_image(filename))
@@ -134,24 +137,20 @@ class Kumiko:
             cv.drawContours(img, [approx], 0, (0, 0, 255), contourSize)
 
             panel = [x, y, w, h]
-            infos["panels"].append(panel)
+            infos["panels"].append(panel)  # type: ignore
 
         if len(infos["panels"]) == 0:
-            infos["panels"].append([0, 0, infos["size"][0], infos["size"][1]])
+            infos["panels"].append(  # type: ignore
+                [0, 0, infos["size"][0], infos["size"][1]]
+            )
 
         for panel in infos["panels"]:
             x, y, w, h = panel
-            panel = {"x": x, "y": y, "w": w, "h": h}
+            panel = {"x": x, "y": y, "w": w, "h": h}  # type: ignore
 
         # Number infos['panels'] comics-wise (left to right for now)
         self.gutterThreshold = sum(infos["size"]) / 2 / 20
-        try:
-            infos["panels"].sort(cmp=self.sort_panels)
-        except TypeError as err:
-            if sys.version_info.major == 3:
-                infos["panels"].sort(key=cmp_to_key(self.sort_panels))
-            else:
-                raise err
+        infos["panels"].sort(key=cmp_to_key(self.sort_panels))  # type: ignore
 
         # write panel numbers on debug img
         fontRatio = sum(infos["size"]) / 2 / 400
