@@ -3,14 +3,15 @@ import os
 import sys
 import cv2 as cv
 
-W_MIN_P = 1/15
+W_MIN_P = 1 / 15
 W_MIN = 0
-H_MIN_P = 1/15
+H_MIN_P = 1 / 15
 H_MIN = 0
 
 
 def cmp_to_key(mycmp):
-    'Convert a cmp= function into a key= function'
+    "Convert a cmp= function into a key= function"
+
     class K:
         def __init__(self, obj, *args):
             self.obj = obj
@@ -32,6 +33,7 @@ def cmp_to_key(mycmp):
 
         def __ne__(self, other):
             return mycmp(self.obj, other.obj) != 0
+
     return K
 
 
@@ -42,19 +44,19 @@ class Kumiko:
 
     def __init__(self, options={}):
 
-        if 'debug' in options:
-            self.options['debug'] = options['debug']
+        if "debug" in options:
+            self.options["debug"] = options["debug"]
         else:
-            self.options['debug'] = False
+            self.options["debug"] = False
 
-        if 'reldir' in options:
-            self.options['reldir'] = options['reldir']
+        if "reldir" in options:
+            self.options["reldir"] = options["reldir"]
         else:
-            self.options['reldir'] = os.getcwd()
-        if 'right_to_left' in options:
-            self.options['right_to_left'] = options['right_to_left']
+            self.options["reldir"] = os.getcwd()
+        if "right_to_left" in options:
+            self.options["right_to_left"] = options["right_to_left"]
         else:
-            self.options['right_to_left'] = True
+            self.options["right_to_left"] = True
 
     def read_image(self, filename):
         return cv.imread(filename)
@@ -75,12 +77,12 @@ class Kumiko:
         return infos
 
     def parse_image(
-            self,
-            filename: str,
-            w_min_p: float = W_MIN_P,
-            h_min_p: float = H_MIN_P,
-            w_min: int = W_MIN,
-            h_min: int = H_MIN
+        self,
+        filename: str,
+        w_min_p: float = W_MIN_P,
+        h_min_p: float = H_MIN_P,
+        w_min: int = W_MIN,
+        h_min: int = H_MIN,
     ):
         """Parse single image.
 
@@ -97,9 +99,9 @@ class Kumiko:
         size.reverse()  # get a [width,height] list
 
         infos = {
-                'filename': os.path.relpath(filename, self.options['reldir']),
-                'size': size,
-                'panels': []
+            "filename": os.path.relpath(filename, self.options["reldir"]),
+            "size": size,
+            "panels": [],
         }
 
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -108,10 +110,10 @@ class Kumiko:
         tmax = 255
         ret, thresh = cv.threshold(gray, tmin, tmax, cv.THRESH_BINARY_INV)
 
-        contours = cv.findContours(
-            thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        contours = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
         contours, hierarchy = cv.findContours(
-            thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2:]
+            thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE
+        )[-2:]
 
         # Get (square) panels out of contours
         for contour in contours:
@@ -124,57 +126,57 @@ class Kumiko:
             x, y, w, h = cv.boundingRect(approx)
 
             # exclude very small panels
-            if w < infos['size'][0] * w_min_p:
+            if w < infos["size"][0] * w_min_p:
                 continue
-            if h < infos['size'][1] * h_min_p:
+            if h < infos["size"][1] * h_min_p:
                 continue
             if w < w_min:
                 continue
             if h < h_min:
                 continue
 
-            contourSize = int(sum(infos['size']) / 2 * 0.004)
+            contourSize = int(sum(infos["size"]) / 2 * 0.004)
             cv.drawContours(img, [approx], 0, (0, 0, 255), contourSize)
 
             panel = [x, y, w, h]
-            infos['panels'].append(panel)
+            infos["panels"].append(panel)
 
-        if len(infos['panels']) == 0:
-            infos['panels'].append([0, 0, infos['size'][0], infos['size'][1]])
+        if len(infos["panels"]) == 0:
+            infos["panels"].append([0, 0, infos["size"][0], infos["size"][1]])
 
-        for panel in infos['panels']:
+        for panel in infos["panels"]:
             x, y, w, h = panel
-            panel = {'x': x, 'y': y, 'w': w, 'h': h}
+            panel = {"x": x, "y": y, "w": w, "h": h}
 
         # Number infos['panels'] comics-wise (left to right for now)
-        self.gutterThreshold = sum(infos['size']) / 2 / 20
+        self.gutterThreshold = sum(infos["size"]) / 2 / 20
         try:
-            infos['panels'].sort(cmp=self.sort_panels)
+            infos["panels"].sort(cmp=self.sort_panels)
         except TypeError as err:
             if sys.version_info.major == 3:
-                infos['panels'].sort(key=cmp_to_key(self.sort_panels))
+                infos["panels"].sort(key=cmp_to_key(self.sort_panels))
             else:
                 raise err
 
         # write panel numbers on debug img
-        fontRatio = sum(infos['size']) / 2 / 400
+        fontRatio = sum(infos["size"]) / 2 / 400
         font = cv.FONT_HERSHEY_SIMPLEX
         fontScale = 1 * fontRatio
         fontColor = (0, 0, 255)
         lineType = 2
         n = 0
-        for panel in infos['panels']:
+        for panel in infos["panels"]:
             n += 1
-            position = (int(panel[0]+panel[2]/2), int(panel[1]+panel[3]/2))
-            cv.putText(
-                img, str(n), position, font, fontScale, fontColor, lineType)
+            position = (int(panel[0] + panel[2] / 2), int(panel[1] + panel[3] / 2))
+            cv.putText(img, str(n), position, font, fontScale, fontColor, lineType)
 
-        if (self.options['debug']):
+        if self.options["debug"]:
             cv.imwrite(
                 os.path.join(
-                    'debug',
-                    os.path.basename(filename)+'-040-contours-numbers.jpg'),
-                img)
+                    "debug", os.path.basename(filename) + "-040-contours-numbers.jpg"
+                ),
+                img,
+            )
 
         return infos
 
@@ -182,37 +184,29 @@ class Kumiko:
         [p1x, p1y, p1w, p1h] = p1
         [p2x, p2y, p2w, p2h] = p2
 
-        p1b = p1y+p1h  # p1's bottom
-        p2b = p2y+p2h  # p2's bottom
-        p1r = p1x+p1w  # p1's right side
-        p2r = p2x+p2w  # p2's right side
+        p1b = p1y + p1h  # p1's bottom
+        p2b = p2y + p2h  # p2's bottom
+        p1r = p1x + p1w  # p1's right side
+        p2r = p2x + p2w  # p2's right side
 
         # p1 is above p2
-        if \
-                p2y >= p1b - self.gutterThreshold and \
-                p2y >= p1y - self.gutterThreshold:
+        if p2y >= p1b - self.gutterThreshold and p2y >= p1y - self.gutterThreshold:
             return -1
 
         # p1 is below p2
-        if \
-                p1y >= p2b - self.gutterThreshold and \
-                p1y >= p2y - self.gutterThreshold:
+        if p1y >= p2b - self.gutterThreshold and p1y >= p2y - self.gutterThreshold:
             return 1
 
         # p1 is left from p2
-        if \
-                p2x >= p1r - self.gutterThreshold and \
-                p2x >= p1x - self.gutterThreshold:
-            if self.options['right_to_left']:
+        if p2x >= p1r - self.gutterThreshold and p2x >= p1x - self.gutterThreshold:
+            if self.options["right_to_left"]:
                 return -1
             else:
                 return 1
 
         # p1 is right from p2
-        if \
-                p1x >= p2r - self.gutterThreshold and \
-                p1x >= p2x - self.gutterThreshold:
-            if self.options['right_to_left']:
+        if p1x >= p2r - self.gutterThreshold and p1x >= p2x - self.gutterThreshold:
+            if self.options["right_to_left"]:
                 return 1
             else:
                 return -1
