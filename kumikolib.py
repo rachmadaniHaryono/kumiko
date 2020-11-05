@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 import os
 import sys
+import typing
+
 import cv2 as cv
 
 W_MIN_P = 1 / 15
 W_MIN = 0
 H_MIN_P = 1 / 15
 H_MIN = 0
+
+OptionVar = typing.Dict[str, typing.Any]
 
 
 def cmp_to_key(mycmp):
@@ -39,24 +43,15 @@ def cmp_to_key(mycmp):
 
 class Kumiko:
 
-    options = {}
+    options: OptionVar
     img = False
 
-    def __init__(self, options={}):
-
-        if "debug" in options:
-            self.options["debug"] = options["debug"]
-        else:
-            self.options["debug"] = False
-
-        if "reldir" in options:
-            self.options["reldir"] = options["reldir"]
-        else:
-            self.options["reldir"] = os.getcwd()
-        if "right_to_left" in options:
-            self.options["right_to_left"] = options["right_to_left"]
-        else:
-            self.options["right_to_left"] = True
+    def __init__(self, options: typing.Optional[OptionVar] = None):
+        if options is None:
+            options = {}
+        self.options["debug"] = options.get("debug", False)
+        self.options["reldir"] = options.get("reldir", os.getcwd())
+        self.options["right_to_left"] = options.get("right_to_left", True)
 
     def read_image(self, filename):
         return cv.imread(filename)
