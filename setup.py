@@ -41,6 +41,6 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",  # Optional (see note above)
     extras_require={  # Optional
-        "test": ["pytest", "pytest-flake8", "pytest-black"],
+        "test": ["pytest", "pytest-flake8", "pytest-black", "pytest-mypy", "isort"],
     },
 )
