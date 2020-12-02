@@ -44,8 +44,9 @@ class Kumiko:
 
     def parse_images(self, filenames: typing.Optional[typing.List[str]]=None):
         if filenames is None:
-            infos = []
+            filenames = []
 
+        infos = []
         if self.options["progress"]:
             print(len(filenames), "files")
 
