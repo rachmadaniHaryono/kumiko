@@ -6,6 +6,7 @@ click hydrus-api tqdm
 """
 import configparser
 import io
+import re
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -72,6 +73,7 @@ def process_hydrus(paths, config_file):
         k = Kumiko()
     cl = hydrus.Client(config["main"]["access_key"])
     repo = "my tags"
+    tags_rf = config["main"].get("tags_regex_filter", None)
     for path in tqdm(paths):
         hash_ = Path(path).stem
         with NamedTemporaryFile() as f:
@@ -84,6 +86,8 @@ def process_hydrus(paths, config_file):
                 ][repo]["0"]
             except Exception:
                 tags = []
+            if tags and tags_rf:
+                tags = list(filter(lambda x: re.match(tags_rf, x), tags))
             k_res = k.parse_image(f.name, **kwargs)
             img = cv2.imread(path)
             panels = k_res["panels"]
