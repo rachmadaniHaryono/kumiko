@@ -182,7 +182,7 @@ class Kumiko:
                 contourSize = int(sum(infos["size"]) / 2 * 0.004)
                 cv.drawContours(img, [p], 0, (0, 0, 255), contourSize)
 
-                panel = Panel([x, y, w, h], self.gutterThreshold)
+                panel = Panel([x, y, w, h], self.gutterThreshold, self.options['right_to_left'])
                 infos["panels"].append(panel)
 
         # Merge every two panels where one contains the other
@@ -190,7 +190,7 @@ class Kumiko:
 
         if len(infos["panels"]) == 0:
             infos["panels"].append(
-                Panel([0, 0, infos["size"][0], infos["size"][1]], self.gutterThreshold)
+                Panel([0, 0, infos["size"][0], infos["size"][1]], self.gutterThreshold, self.options['right_to_left'])
             )
 
         # Number infos['panels'] comics-wise (left to right for now)
