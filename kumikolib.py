@@ -1,24 +1,34 @@
 #!/usr/bin/env python
-
-
 import os
+import typing
+
 import cv2 as cv
 import numpy as np
 
 
+W_MIN_P = 1 / 15
+W_MIN = 0
+H_MIN_P = 1 / 15
+H_MIN = 0
+
+
 class Kumiko:
 
-    options = {}
     img = False
 
-    def __init__(self, options={}):
+    def __init__(self, options: typing.Optional[typing.Dict[str, typing.Any]]=None):
+        if options is None:
+            options = {}
 
+        self.options = {}
         self.options["debug_dir"] = "debug_dir" in options and options["debug_dir"]
         self.options["progress"] = "progress" in options and options["progress"]
 
         self.options["reldir"] = (
             options["reldir"] if "reldir" in options else os.getcwd()
         )
+        self.options['right_to_left'] = options.get('right_to_left', False)
+
 
     def read_image(self, filename):
         return cv.imread(filename)
@@ -32,8 +42,9 @@ class Kumiko:
         # filenames = filenames[0:10]
         return self.parse_images(filenames)
 
-    def parse_images(self, filenames=[]):
-        infos = []
+    def parse_images(self, filenames: typing.Optional[typing.List[str]]=None):
+        if filenames is None:
+            infos = []
 
         if self.options["progress"]:
             print(len(filenames), "files")
@@ -104,7 +115,23 @@ class Kumiko:
     def getGutterThreshold(size):
         return sum(size) / 2 / 20
 
-    def parse_image(self, filename):
+    def parse_image(
+        self,
+        filename: str,
+        w_min_p: float = W_MIN_P,
+        h_min_p: float = H_MIN_P,
+        w_min: int = W_MIN,
+        h_min: int = H_MIN,
+    ):
+        """Parse single image.
+
+        Args:
+            filename: image filename
+            w_min_p: minimum width in percentage
+            h_min_p: minimum height in percentage
+            w_min: minimum width in pixel
+            h_min: minimum height in pixel
+        """
         img = self.read_image(filename)
         # TODO: handle error
 
@@ -143,7 +170,13 @@ class Kumiko:
                 x, y, w, h = cv.boundingRect(p)
 
                 # exclude very small panels
-                if w < infos["size"][0] / 15 or h < infos["size"][1] / 15:
+                if w < infos["size"][0] * w_min_p:
+                    continue
+                if h < infos["size"][1] * h_min_p:
+                    continue
+                if w < w_min:
+                    continue
+                if h < h_min:
                     continue
 
                 contourSize = int(sum(infos["size"]) / 2 * 0.004)
@@ -191,11 +224,13 @@ class Kumiko:
 
 
 class Panel:
-    def __init__(self, xywh, gutterThreshold):
+
+    def __init__(self, xywh: typing.Tuple[int, int, int, int], gutterThreshold: int, right_to_left: bool = False):
         [self.x, self.y, self.w, self.h] = xywh
         self.b = self.y + self.h  # panel's bottom
         self.r = self.x + self.w  # panel's right side
         self.gutterThreshold = gutterThreshold
+        self.right_to_left = right_to_left
 
     def toarray(self):
         return [self.x, self.y, self.w, self.h]
@@ -228,6 +263,8 @@ class Panel:
             other.x >= self.r - self.gutterThreshold
             and other.x >= self.x - self.gutterThreshold
         ):
+            if self.right_to_left:
+                return False
             return True
 
         # panel is right from other
@@ -235,6 +272,8 @@ class Panel:
             self.x >= other.r - self.gutterThreshold
             and self.x >= other.x - self.gutterThreshold
         ):
+            if self.right_to_left:
+                return True
             return False
 
         return True  # should not happen, TODO: raise an exception?
