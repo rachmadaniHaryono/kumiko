@@ -1,7 +1,9 @@
+*.pyc
 .ipynb_checkpoints/*
-Kumiko.egg-info/*
+__pycache__
 __pycache__/**
 config.cfg
 image.jpg
+Kumiko.egg-info/*
 note.md
 notebook.ipynb
