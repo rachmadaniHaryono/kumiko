@@ -18,7 +18,7 @@ class Kumiko:
 
     img = False
 
-    def __init__(self, options: typing.Optional[typing.Dict[str, typing.Any]]=None):
+    def __init__(self, options: typing.Optional[typing.Dict[str, typing.Any]] = None):
         if options is None:
             options = {}
 
@@ -47,11 +47,13 @@ class Kumiko:
         # filenames = filenames[0:10]
         return self.parse_images(filenames)
 
-    def parse_images(self, filenames: typing.Optional[typing.List[str]]=None):
+    def parse_images(
+        self, filenames: typing.Optional[typing.List[str]] = None
+    ) -> typing.List[typing.Any]:
         if filenames is None:
             filenames = []
-
         infos = []
+
         if self.options["progress"]:
             print(len(filenames), "files")
 
