@@ -29,6 +29,9 @@ class Kumiko:
         )
         self.options['right_to_left'] = options.get('right_to_left', False)
 
+        self.options["min_panel_size_ratio"] = 1 / 15
+        if "min_panel_size_ratio" in options and options["min_panel_size_ratio"]:
+            self.options["min_panel_size_ratio"] = options["min_panel_size_ratio"]
 
     def read_image(self, filename):
         return cv.imread(filename)
@@ -171,6 +174,11 @@ class Kumiko:
                 x, y, w, h = cv.boundingRect(p)
 
                 # exclude very small panels
+                if (
+                    w < infos["size"][0] * self.options["min_panel_size_ratio"]
+                    or h < infos["size"][1] * self.options["min_panel_size_ratio"]
+                ):
+                    continue
                 if w < infos["size"][0] * w_min_p:
                     continue
                 if h < infos["size"][1] * h_min_p:
