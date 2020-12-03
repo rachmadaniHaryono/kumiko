@@ -24,7 +24,10 @@ setup(
     py_modules=["kumikolib"],
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires=["opencv-python>=4.2.0.32"],
+    install_requires=[
+        "numpy>=1.19.1",
+        "opencv-python>=4.3.0.36",
+    ],
     # metadata to display on PyPI
     author="nicoo",
     description="set of tools to compute useful information "
@@ -43,4 +46,5 @@ setup(
     extras_require={  # Optional
         "test": ["pytest", "pytest-flake8", "pytest-black", "pytest-mypy", "isort"],
     },
+    entry_points = {'console_scripts': ['kumiko=kumikolib:main'],}
 )
