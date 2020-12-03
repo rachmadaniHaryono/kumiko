@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-
-
-
+import argparse
+import json
 import os
+import sys 
+
 import cv2 as cv
 import numpy as np
-
 
 
 class Kumiko:
@@ -255,3 +255,50 @@ class Panel:
 		
 		# panels overlap if the overlapping area is more than 75% of the smallest one's area
 		return overlap_panel.area() / other.area() > 0.75
+
+
+def main(argv=None):
+        if argv is None:
+            argv = sys.argv
+        parser = argparse.ArgumentParser(description='Kumiko CLI')
+
+        # Utilities
+        parser.add_argument('--debug-dir', nargs=1, help='Write debug files in this directory (image files with extra panel information and more)')
+        parser.add_argument('--progress', action='store_true', help='Prints progress information')
+
+        # Input/Output
+        parser.add_argument('-i', '--input', nargs=1, required=True, help='A file or folder name to parse')
+        parser.add_argument('-o', '--output', nargs=1, help='A file name to save json output to')
+
+        # Configuration tweaks
+        parser.add_argument('--min-panel-size-ratio', nargs=1, type=float, help='Panels will be considered too small and exluded if they have a width < img.width * ratio or height < img/height * ratio (default is 1/15th)')
+
+
+        args = parser.parse_args(argv)
+        k = Kumiko({
+                'debug_dir': args.debug_dir[0] if args.debug_dir else False,
+                'progress': args.progress,
+                'min_panel_size_ratio': args.min_panel_size_ratio[0] if args.min_panel_size_ratio else False
+        })
+
+        file_or_folder = args.input[0]
+
+        if os.path.isdir(file_or_folder):
+                info = k.parse_dir(file_or_folder)
+        elif os.path.isfile(file_or_folder):
+                info = k.parse_images([file_or_folder])
+        else:
+                print("--input (-i) is not a file or directory: '"+file_or_folder+"'")
+                return
+
+        info = json.dumps(info)
+
+        if args.output:
+                f = open(args.output[0], 'w')
+                f.write(info)
+                f.close()
+        else:
+                print(info)
+
+if __name__ == '__main__':
+        sys.exit(main())
