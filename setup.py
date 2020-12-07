@@ -21,7 +21,7 @@ Topic :: Software Development :: Libraries
 setup(
     name="Kumiko",
     version="0.1",
-    py_modules=["kumikolib"],
+    py_modules=["kumikolib", "kumiko", "lib"],
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
     install_requires=[
@@ -43,5 +43,4 @@ setup(
     # could also include long_description, download_url, etc.
     long_description=long_description,
     long_description_content_type="text/markdown",  # Optional (see note above)
-    entry_points = {'console_scripts': ['kumiko=kumikolib:main'],}
 )
