@@ -7,3 +7,5 @@ image.jpg
 Kumiko.egg-info/*
 note.md
 notebook.ipynb
+tests/*.html
+tests/results/*
