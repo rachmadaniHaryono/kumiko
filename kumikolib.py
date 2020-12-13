@@ -61,7 +61,13 @@ class Kumiko:
             filenames.append(filename.path)
         return self.parse_images(filenames, urls)
 
-    def parse_images(self, filenames=[], urls=None):
+    def parse_images(
+        self,
+        filenames: typing.Optional[typing.List[str]] = None,
+        urls: typing.Optional[typing.List[str]] = None,
+    ) -> typing.List[typing.Any]:
+        if filenames is None:
+            filenames = []
         infos = []
 
         if self.options["progress"]:
