@@ -2,7 +2,12 @@ import sys
 
 
 class Panel:
-    def __init__(self, xywh, gutterThreshold):
+    def __init__(
+        self,
+        xywh: typing.Tuple[int, int, int, int],
+        gutterThreshold: float,
+        right_to_left=False,
+    ):
         for d in ["x", "y", "r", "b"]:
             super().__setattr__(
                 d, 0
@@ -12,6 +17,7 @@ class Panel:
         self.r = self.x + xywh[2]  # panel's right edge
         self.b = self.y + xywh[3]  # panel's bottom edge
         self.gutterThreshold = gutterThreshold
+        self.right_to_left = right_to_left
 
     def to_xywh(self):
         return [self.x, self.y, self.w, self.h]
@@ -44,6 +50,8 @@ class Panel:
             other.x >= self.r - self.gutterThreshold
             and other.x >= self.x - self.gutterThreshold
         ):
+            if self.right_to_left:
+                return False
             return True
 
         # panel is right from other
@@ -51,6 +59,8 @@ class Panel:
             self.x >= other.r - self.gutterThreshold
             and self.x >= other.x - self.gutterThreshold
         ):
+            if self.right_to_left:
+                return True
             return False
 
         return True  # should not happen, TODO: raise an exception?

@@ -34,7 +34,7 @@ class Kumiko:
         self.options["reldir"] = (
             options["reldir"] if "reldir" in options else os.getcwd()
         )
-        self.options['right_to_left'] = options.get('right_to_left', False)
+        self.options["right_to_left"] = options.get("right_to_left", False)
 
         self.options["min_panel_size_ratio"] = 1 / 15
         if "min_panel_size_ratio" in options and options["min_panel_size_ratio"]:
@@ -305,7 +305,7 @@ class Kumiko:
                             img, [p], 0, [(0, 255, 0), (255, 0, 0)][i], contourSize
                         )
 
-                panel = Panel([x, y, w, h], self.gutterThreshold)
+                panel = Panel([x, y, w, h], self.gutterThreshold, self.right_to_left)
                 infos["panels"].append(panel)
 
         # merge panels that shouldn't have been split (speech bubble diving in a panel)
@@ -319,7 +319,11 @@ class Kumiko:
 
         if len(infos["panels"]) == 0:
             infos["panels"].append(
-                Panel([0, 0, infos["size"][0], infos["size"][1]], self.gutterThreshold)
+                Panel(
+                    [0, 0, infos["size"][0], infos["size"][1]],
+                    self.gutterThreshold,
+                    self.right_to_left,
+                )
             )
 
         # Number infos['panels'] comics-wise (left to right for now)
