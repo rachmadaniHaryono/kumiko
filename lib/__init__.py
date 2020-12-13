@@ -1,1 +1,1 @@
- 
+from .kumikolib import Kumiko 
